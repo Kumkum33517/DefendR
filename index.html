@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DefendR OSINT - AI-Powered Cybersecurity</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: rgba(20, 20, 20, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            background: linear-gradient(45deg, #4ecdc4, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-info {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .header-info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: #cccccc;
+        }
+
+        .dashboard {
+            flex: 1;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .hero-section {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, #4ecdc4, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: #cccccc;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-bar {
+            max-width: 500px;
+            margin: 0 auto 2rem;
+            position: relative;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+        }
+
+        .search-bar input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .search-bar i {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #4ecdc4, #ff6b6b);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #4ecdc4;
+        }
+
+        .stat-label {
+            color: #cccccc;
+            font-size: 0.9rem;
+        }
+
+        .alerts-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #ff6b6b;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-title i {
+            font-size: 1.2rem;
+        }
+
+        .alert-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tab.active {
+            background: rgba(255, 107, 107, 0.2);
+            border-color: #ff6b6b;
+            color: #ff6b6b;
+        }
+
+        .alerts-container {
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 1rem;
+        }
+
+        .alert-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border-left: 4px solid #4ecdc4;
+            transition: all 0.3s ease;
+        }
+
+        .alert-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(5px);
+        }
+
+        .alert-item.high {
+            border-left-color: #ff6b6b;
+        }
+
+        .alert-item.critical {
+            border-left-color: #ff4757;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 71, 87, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0); }
+        }
+
+        .alert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+
+        .alert-type {
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .alert-severity {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .alert-severity.high {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .alert-severity.medium {
+            background: #ffa726;
+            color: white;
+        }
+
+        .alert-severity.critical {
+            background: #ff4757;
+            color: white;
+        }
+
+        .alert-meta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            color: #cccccc;
+        }
+
+        .alert-details {
+            color: #e0e0e0;
+            font-size: 0.9rem;
+        }
+
+        .features-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.1);
+        }
+
+        .feature-title {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: #4ecdc4;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .feature-description {
+            color: #cccccc;
+            font-size: 0.9rem;
+        }
+
+        .footer {
+            background: rgba(20, 20, 20, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .footer-tagline {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .footer-text {
+            color: #cccccc;
+            font-size: 0.9rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .status-bar {
+            background: rgba(20, 20, 20, 0.9);
+            padding: 0.5rem 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: #cccccc;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-item.online {
+            color: #4ecdc4;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .new-alert {
+            animation: highlight 1.5s ease-out;
+        }
+        
+        @keyframes highlight {
+            0% { background-color: rgba(255, 107, 107, 0.3); }
+            100% { background-color: rgba(255, 255, 255, 0.05); }
+        }
+
+        .risk-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .risk-panel-title {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            color: #ff6b6b;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>DefendR OSINT</h1>
+        <div class="header-info">
+            <div class="header-info-item">
+                <i class="fas fa-shield-alt"></i>
+                <span>AI-Powered Cybersecurity</span>
+            </div>
+            <div class="header-info-item">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>India</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard">
+        <div class="hero-section">
+            <h1 class="hero-title">DefendR Dashboard</h1>
+            <p class="hero-subtitle">AI-Powered Cybersecurity for Indian SMEs</p>
+            <div class="search-bar">
+                <input type="text" placeholder="Type here to search...">
+                <i class="fas fa-search"></i>
+            </div>
+        </div>
+
+        <div class="risk-panel">
+            <div class="risk-panel-title">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>Macfirum Risk Panel</span>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="threatCount">765</div>
+                    <div class="stat-label">Threats Detected Today</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="riskScore">87</div>
+                    <div class="stat-label">Risk Score</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="protectedEndpoints">1,479</div>
+                    <div class="stat-label">Protected Endpoints</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="activeUsers">103</div>
+                    <div class="stat-label">Active Users</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="alerts-section">
+            <h2 class="section-title">
+                <i class="fas fa-bell"></i>
+                <span>Live Threat Intelligence</span>
+            </h2>
+            <div class="alert-tabs">
+                <div class="tab active" data-tab="social">
+                    <i class="fas fa-hashtag"></i>
+                    <span>Social Media</span>
+                </div>
+                <div class="tab" data-tab="news">
+                    <i class="fas fa-newspaper"></i>
+                    <span>News Sources</span>
+                </div>
+                <div class="tab" data-tab="darkweb">
+                    <i class="fas fa-user-secret"></i>
+                    <span>Dark Web</span>
+                </div>
+            </div>
+            <div class="alerts-container" id="alertsContainer">
+                <!-- Alerts will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <div class="features-section">
+            <div class="feature-card">
+                <h3 class="feature-title">
+                    <i class="fas fa-brain"></i>
+                    <span>AI-Powered Detection</span>
+                </h3>
+                <p class="feature-description">Advanced machine learning algorithms detect threats in real-time with 99.7% accuracy</p>
+            </div>
+            <div class="feature-card">
+                <h3 class="feature-title">
+                    <i class="fas fa-eye"></i>
+                    <span>Real-time Monitoring</span>
+                </h3>
+                <p class="feature-description">24/7 continuous surveillance with instant alerts for immediate threat response</p>
+            </div>
+            <div class="feature-card">
+                <h3 class="feature-title">
+                    <i class="fas fa-rupee-sign"></i>
+                    <span>Affordable Protection</span>
+                </h3>
+                <p class="feature-description">Enterprise-grade security at just ₹2,000-5,000/month - 10x cheaper than competitors</p>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-tagline">DefendR: Making Cybersecurity Accessible for Every Indian Business</div>
+            <div class="footer-text">Protecting 63 million SMEs across India with AI-powered cybersecurity</div>
+        </div>
+    </footer>
+
+    <div class="status-bar">
+        <div class="status-item online">
+            <i class="fas fa-circle"></i>
+            <span>System Active</span>
+        </div>
+        <div class="status-item">
+            <i class="fas fa-clock"></i>
+            <span id="currentTime">11:45 AM</span>
+        </div>
+        <div class="status-item">
+            <i class="fas fa-calendar-alt"></i>
+            <span id="currentDate">08-07-2023</span>
+        </div>
+        <div class="status-item">
+            <i class="fas fa-temperature-high"></i>
+            <span>27°C</span>
+        </div>
+        <div class="status-item online">
+            <i class="fas fa-robot"></i>
+            <span>AI Engine: Online</span>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced data with OSINT sources
+        let threatCount = 765;
+        let riskScore = 87;
+        let protectedEndpoints = 1479;
+        let activeUsers = 103;
+
+        // Enhanced alert types with different categories and more variations
+        const alertTemplates = {
+            social: [
+                { type: 'Malware discussion detected on Telegram channel', severity: 'HIGH', source: 'Telegram', details: 'Cybercriminals sharing new banking trojan targeting UPI apps', location: 'Bangalore' },
+                { type: 'Phishing campaign spread via Facebook groups', severity: 'HIGH', source: 'Facebook', details: 'Fake government job postings collecting personal information', location: 'Mumbai' },
+                { type: 'Threat actor recruiting on Twitter', severity: 'MEDIUM', source: 'Twitter', details: 'Account looking for insider access to tech companies', location: 'Delhi' },
+                { type: 'Social engineering techniques shared on LinkedIn', severity: 'MEDIUM', source: 'LinkedIn', details: 'Post detailing CEO fraud tactics getting viral engagement', location: 'Hyderabad' },
+                { type: 'Suspicious profile creating fake company pages', severity: 'MEDIUM', source: 'Instagram', details: 'Multiple fake fintech company profiles created from same IP', location: 'Chennai' }
+            ],
+            news: [
+                { type: 'Major data breach reported in banking sector', severity: 'CRITICAL', source: 'Economic Times', details: '2.5M customer records exposed in HDFC Bank security incident', location: 'Mumbai' },
+                { type: 'Government warns of new mobile banking trojan', severity: 'HIGH', source: 'Times of India', details: 'CERT-In issues advisory about Android malware targeting Indian banks', location: 'Delhi' },
+                { type: 'Cybercriminals target e-commerce during festivals', severity: 'MEDIUM', source: 'Hindustan Times', details: 'Increased phishing attacks during Diwali shopping season', location: 'Bangalore' },
+                { type: 'Healthcare sector faces ransomware surge', severity: 'HIGH', source: 'Indian Express', details: 'Multiple hospitals hit by coordinated ransomware campaign', location: 'Chennai' },
+                { type: 'New APT group targeting Indian defense contractors', severity: 'CRITICAL', source: 'Business Standard', details: 'Advanced persistent threat campaign discovered by cybersecurity researchers', location: 'Pune' }
+            ],
+            darkweb: [
+                { type: 'Indian credit card data being sold on marketplace', severity: 'CRITICAL', source: 'AlphaBay Revival', details: '50,000 Indian credit card details listed for $2 each', location: 'Unknown' },
+                { type: 'Stolen corporate credentials from major IT firm', severity: 'HIGH', source: 'Genesis Market', details: 'Employee login credentials from Fortune 500 Indian company', location: 'Unknown' },
+                { type: 'Ransomware-as-a-Service targeting Indian businesses', severity: 'CRITICAL', source: 'REvil Forum', details: 'New RaaS specifically designed for Indian market penetration', location: 'Unknown' },
+                { type: 'Government document leak on hacker forum', severity: 'HIGH', source: 'BreachForums', details: 'Classified documents allegedly from Indian ministry posted for sale', location: 'Unknown' },
+                { type: 'Banking trojan source code shared freely', severity: 'MEDIUM', source: 'Exploit.in', details: 'Full source code for UPI-targeting malware released publicly', location: 'Unknown' }
+            ]
+        };
+
+        // Current alerts storage
+        let alertTypes = {
+            social: [...alertTemplates.social],
+            news: [...alertTemplates.news],
+            darkweb: [...alertTemplates.darkweb]
+        };
+
+        let currentTab = 'social';
+        const locations = ['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Hyderabad', 'Kolkata', 'Pune', 'Ahmedabad', 'Jaipur', 'Lucknow'];
+
+        // Tab switching functionality
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentTab = tab.dataset.tab;
+                displayAlerts();
+            });
+        });
+
+        // Display alerts for current tab
+        function displayAlerts() {
+            const container = document.getElementById('alertsContainer');
+            container.innerHTML = '';
+            
+            const alerts = alertTypes[currentTab];
+            alerts.forEach((alert, index) => {
+                const alertElement = createAlertElement(alert, index);
+                container.appendChild(alertElement);
+            });
+        }
+
+        // Create alert element
+        function createAlertElement(alert, index) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert-item ${alert.severity.toLowerCase()} ${alert.new ? 'new-alert' : ''}`;
+            
+            // Remove new flag after displaying
+            if (alert.new) delete alert.new;
+            
+            alertDiv.innerHTML = `
+                <div class="alert-header">
+                    <div class="alert-type">${alert.type}</div>
+                    <div class="alert-severity ${alert.severity.toLowerCase()}">${alert.severity}</div>
+                </div>
+                <div class="alert-meta">
+                    <span>📍 ${alert.location}</span>
+                    <span>📱 ${alert.source}</span>
+                    <span>🕐 ${getRandomTime()}</span>
+                </div>
+                <div class="alert-details">${alert.details}</div>
+            `;
+            
+            return alertDiv;
+        }
+
+        // Generate random time for alerts
+        function getRandomTime() {
+            const minutes = Math.floor(Math.random() * 60);
+            return `${minutes} min ago`;
+        }
+
+        // Generate a random alert
+        function generateRandomAlert(category) {
+            const templates = alertTemplates[category];
+            const randomTemplate = templates[Math.floor(Math.random() * templates.length)];
+            
+            return {
+                ...randomTemplate,
+                location: category === 'darkweb' ? 'Unknown' : locations[Math.floor(Math.random() * locations.length)],
+                new: true
+            };
+        }
+
+        // Add new alert to a specific category
+        function addNewAlertToCategory(category) {
+            const newAlert = generateRandomAlert(category);
+            alertTypes[category].unshift(newAlert);
+            
+            // Keep only the latest 10 alerts per category
+            if (alertTypes[category].length > 10) {
+                alertTypes[category].pop();
+            }
+            
+            // If this is the currently viewed category, update the display
+            if (category === currentTab) {
+                displayAlerts();
+            }
+            
+            // Update stats
+            updateStats();
+        }
+
+        // Update stats
+        function updateStats() {
+            threatCount += Math.floor(Math.random() * 3);
+            riskScore += Math.floor(Math.random() * 3) - 1;
+            protectedEndpoints += Math.floor(Math.random() * 2);
+            activeUsers += Math.floor(Math.random() * 2);
+            
+            // Keep risk score within bounds
+            riskScore = Math.max(0, Math.min(100, riskScore));
+            
+            document.getElementById('threatCount').textContent = threatCount.toLocaleString();
+            document.getElementById('riskScore').textContent = riskScore;
+            document.getElementById('protectedEndpoints').textContent = protectedEndpoints.toLocaleString();
+            document.getElementById('activeUsers').textContent = activeUsers.toLocaleString();
+        }
+
+        // Update time and date
+        function updateDateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const dateString = now.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            
+            document.getElementById('currentTime').textContent = timeString;
+            document.getElementById('currentDate').textContent = dateString;
+        }
+
+        // Initialize dashboard
+        displayAlerts();
+        updateDateTime();
+        
+        // Update stats every 3 seconds
+        setInterval(updateStats, 3000);
+        
+        // Update time every minute
+        setInterval(updateDateTime, 60000);
+        
+        // Add new alerts to random categories more frequently
+        setInterval(() => {
+            const categories = ['social', 'news', 'darkweb'];
+            const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+            addNewAlertToCategory(randomCategory);
+        }, 5000); // New alert every 5 seconds
+        
+        // Also add alerts to all categories periodically
+        setInterval(() => {
+            ['social', 'news', 'darkweb'].forEach(category => {
+                addNewAlertToCategory(category);
+            });
+        }, 15000); // Bulk update every 15 seconds
+    </script>
+</body>
+</html>
